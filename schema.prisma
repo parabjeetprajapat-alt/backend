@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               Int       @id @default(autoincrement())
+  name             String
+  email            String    @unique
+  password         String
+  role             Role
+  mobile           String?
+  refreshToken     String?   
+
+  projects         Project[] @relation("BuyerProjects")
+  assignedProjects Project[] @relation("SellerProject")
+  bids             Bid[]
+  deliverables     Deliverable[]
+}
+
+model Project {
+  id          Int        @id @default(autoincrement())
+  title       String
+  description String
+  budgetMin   Int
+  budgetMax   Int
+  deadline    DateTime
+  status      Status     @default(PENDING)
+  department  Department // NEW: Department field
+  
+  buyer       User      @relation("BuyerProjects", fields: [buyerId], references: [id], onDelete: Cascade)
+  buyerId     Int
+
+  seller      User?     @relation("SellerProject", fields: [sellerId], references: [id], onDelete: SetNull)
+  sellerId    Int?
+
+  bids        Bid[]
+  deliverable Deliverable?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Deliverable {
+  id          Int      @id @default(autoincrement())
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   Int      @unique
+  seller      User     @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  sellerId    Int
+  
+  pdfUrl      String?
+  pdfLink     String?
+  zipUrl      String?
+  zipLink     String?
+  videoUrl    String?
+  videoLink   String?
+  uploadedAt  DateTime @default(now())
+}
+
+model Bid {
+  id             Int      @id @default(autoincrement())
+  project        Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId      Int
+  seller         User     @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  sellerId       Int
+  amount         Int
+  estimatedTime  String
+  message        String
+  createdAt      DateTime @default(now())
+  
+  @@unique([projectId, sellerId])
+}
+
+enum Role {
+  BUYER
+  SELLER
+}
+
+enum Status {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+// NEW: Department enum
+enum Department {
+  TECHNOLOGY
+  DESIGN
+  MARKETING
+  WRITING
+  VIDEO
+  MUSIC
+  BUSINESS
+  DATA
+  MOBILE
+  OTHER
+}
