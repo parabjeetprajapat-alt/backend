@@ -36,8 +36,8 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json());
-const uploadsDir = path.join(__dirname, '../uploads');
-const bidVideosDir = path.join(__dirname, '../uploads/bid-videos');
+const uploadsDir = path.join(process.cwd(), 'uploads');
+const bidVideosDir = path.join(process.cwd(), 'uploads/bid-videos');
 
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
